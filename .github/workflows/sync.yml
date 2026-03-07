@@ -35,5 +35,9 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add .sync-state.json
-          git diff --cached --quiet || (git commit -m "Update sync state" && git push)
+          if [ -f .sync-state.json ]; then
+            git add .sync-state.json
+            git diff --cached --quiet || (git commit -m "Update sync state" && git push)
+          else
+            echo "No state file to commit"
+          fi
