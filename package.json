@@ -1,0 +1,19 @@
+{
+  "name": "memos-blog-sync",
+  "version": "1.0.0",
+  "description": "Sync memos blog posts to Telegram",
+  "main": "sync.js",
+  "scripts": {
+    "start": "node sync.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "dependencies": {
+    "is-image-url": "^1.1.8",
+    "slimbot": "^4.6.0"
+  }
+}
