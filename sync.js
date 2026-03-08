@@ -70,9 +70,47 @@ function getMarkdownFiles() {
   }
 }
 
+function escapeHtml(text) {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+function markdownToHtml(markdown) {
+  let html = markdown;
+
+  html = escapeHtml(html);
+
+  html = html.replace(/^###### (.*$)/gim, "<h6>$1</h6>");
+  html = html.replace(/^##### (.*$)/gim, "<h5>$1</h5>");
+  html = html.replace(/^#### (.*$)/gim, "<h4>$1</h4>");
+  html = html.replace(/^### (.*$)/gim, "<h3>$1</h3>");
+  html = html.replace(/^## (.*$)/gim, "<h2>$1</h2>");
+  html = html.replace(/^# (.*$)/gim, "<h1>$1</h1>");
+
+  html = html.replace(/\*\*(.*?)\*\*/g, "<b>$1</b>");
+  html = html.replace(/\*(.*?)\*/g, "<i>$1</i>");
+
+  html = html.replace(/`(.*?)`/g, "<code>$1</code>");
+
+  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
+
+  html = html.replace(/^\> (.*$)/gim, "<blockquote>$1</blockquote>");
+
+  html = html.replace(/^\- (.*$)/gim, "<li>$1</li>");
+  html = html.replace(/^\d+\. (.*$)/gim, "<li>$1</li>");
+
+  html = html.replace(/\n/g, "<br>");
+
+  return html;
+}
+
 async function sendToTelegram(fileName, content) {
   if (!BOT_TOKEN || !TELEGRAM_CHAT_ID) {
-    console.log("Telegram bot token or chat ID not set, skipping Telegram notification");
+    console.log(
+      "Telegram bot token or chat ID not set, skipping Telegram notification",
+    );
     return false;
   }
 
@@ -86,19 +124,23 @@ async function sendToTelegram(fileName, content) {
       return false;
     }
 
+    const htmlContent = markdownToHtml(markdownContent);
+
     const config = {
-      parse_mode: "Markdown",
+      parse_mode: "HTML",
       disable_web_page_preview: false,
       disable_notification: false,
     };
 
-    await slimbot.sendMessage(TELEGRAM_CHAT_ID, markdownContent, config);
+    await slimbot.sendMessage(TELEGRAM_CHAT_ID, htmlContent, config);
 
     const imageRegex = /(?:!\[(.*?)\]\((.*?)\))/g;
     const images = markdownContent.match(imageRegex);
 
     if (images && images.length > 0) {
-      console.log(`Found ${images.length} images in ${fileName}, sending to Telegram...`);
+      console.log(
+        `Found ${images.length} images in ${fileName}, sending to Telegram...`,
+      );
 
       for (const image of images) {
         const url = image.slice(image.indexOf("(") + 1, -1);
